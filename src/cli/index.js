@@ -28,7 +28,6 @@ program
   .command('config')
   .description('Manage scoopi configuration')
   .option('--show', 'Show current configuration')
-  .option('--list', 'List all available configuration keys')
   .option('--get <key>', 'Get value for a specific configuration key')
   .option('--set <key>', 'Set value for a configuration key')
   .option('--value <value>', 'Value to set (used with --set)')
