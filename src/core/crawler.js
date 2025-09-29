@@ -28,21 +28,34 @@ export class Crawler {
 
   async crawl(startUrl) {
     try {
-      this.logger.info(`Starting crawl of ${startUrl}`);
+      // Normalize start URL
+      const normalizedStartUrl = UrlUtils.normalizeUrl(startUrl);
+      if (!normalizedStartUrl) {
+        throw new Error(`Invalid start URL: ${startUrl}`);
+      }
+
+      this.logger.info(`Starting crawl of ${normalizedStartUrl}`);
       this.logger.debug(`Options: ${JSON.stringify(this.options, null, 2)}`);
 
       // Initialize browser
       await this.initBrowser();
 
       // Add start URL to queue
-      this.urlQueue.push({ url: startUrl, depth: 0 });
+      this.urlQueue.push({ url: normalizedStartUrl, depth: 0 });
 
       // Process queue
       while (this.urlQueue.length > 0 && !this.interrupted) {
         const { url, depth } = this.urlQueue.shift();
 
+        // Normalize URL for consistent tracking
+        const normalizedUrl = UrlUtils.normalizeUrl(url);
+        if (!normalizedUrl) {
+          this.logger.debug(`Skipping invalid URL: ${url}`);
+          continue;
+        }
+
         // Skip if already visited
-        if (this.visitedUrls.has(url)) {
+        if (this.visitedUrls.has(normalizedUrl)) {
           continue;
         }
 
@@ -53,8 +66,8 @@ export class Crawler {
         }
 
         try {
-          await this.crawlPage(url, depth);
-          this.visitedUrls.add(url);
+          await this.crawlPage(normalizedUrl, depth);
+          this.visitedUrls.add(normalizedUrl);
 
           // Add delay between requests
           if (this.options.delay > 0) {
@@ -148,10 +161,12 @@ export class Crawler {
 
         // Add links to queue
         filteredLinks.forEach(link => {
-          if (!this.visitedUrls.has(link.href) &&
-              !this.urlQueue.some(item => item.url === link.href)) {
-            this.urlQueue.push({ url: link.href, depth: depth + 1 });
-            this.logger.debug(`Queued: ${link.href}`);
+          const normalizedHref = UrlUtils.normalizeUrl(link.href, url);
+          if (normalizedHref &&
+              !this.visitedUrls.has(normalizedHref) &&
+              !this.urlQueue.some(item => UrlUtils.normalizeUrl(item.url) === normalizedHref)) {
+            this.urlQueue.push({ url: normalizedHref, depth: depth + 1 });
+            this.logger.debug(`Queued: ${normalizedHref}`);
           }
         });
 

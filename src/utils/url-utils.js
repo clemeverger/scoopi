@@ -20,7 +20,32 @@ export class UrlUtils {
 
   static normalizeUrl(url, baseUrl) {
     try {
-      return new URL(url, baseUrl).href;
+      const parsed = new URL(url, baseUrl);
+
+      // Remove fragment
+      parsed.hash = '';
+
+      // Remove tracking query parameters
+      const trackingParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'fbclid', 'gclid', 'ref', '_ga'];
+      trackingParams.forEach(param => {
+        parsed.searchParams.delete(param);
+      });
+
+      // Normalize hostname (lowercase)
+      parsed.hostname = parsed.hostname.toLowerCase();
+
+      // Remove default ports
+      if ((parsed.protocol === 'https:' && parsed.port === '443') ||
+          (parsed.protocol === 'http:' && parsed.port === '80')) {
+        parsed.port = '';
+      }
+
+      // Normalize pathname (remove trailing slash except for root)
+      if (parsed.pathname !== '/' && parsed.pathname.endsWith('/')) {
+        parsed.pathname = parsed.pathname.slice(0, -1);
+      }
+
+      return parsed.href;
     } catch {
       return null;
     }
