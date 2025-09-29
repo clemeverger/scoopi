@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { Crawler } from '../core/crawler.js';
 import { Logger } from '../utils/logger.js';
+import { ConfigManager } from '../config/manager.js';
 
 export async function crawlCommand(url, options) {
   const logger = new Logger(options.verbose);
@@ -11,12 +12,16 @@ export async function crawlCommand(url, options) {
     // Validate URL
     new URL(url);
 
+    // Load configuration
+    const configManager = new ConfigManager();
+    const config = await configManager.getConfig(options);
+
     const crawlerOptions = {
-      maxDepth: parseInt(options.depth),
-      outputDir: options.output,
+      maxDepth: config.maxDepth,
+      outputDir: config.outputDir,
       includePatterns: options.include ? options.include.split(',') : [],
       excludePatterns: options.exclude ? options.exclude.split(',') : [],
-      delay: parseInt(options.delay),
+      delay: config.delay,
       verbose: options.verbose
     };
 

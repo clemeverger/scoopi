@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { crawlCommand } from './commands.js';
+import { configCommand } from './config-commands.js';
 
 const program = new Command();
 
@@ -27,15 +28,11 @@ program
   .command('config')
   .description('Manage scoopi configuration')
   .option('--show', 'Show current configuration')
+  .option('--list', 'List all available configuration keys')
+  .option('--get <key>', 'Get value for a specific configuration key')
+  .option('--set <key>', 'Set value for a configuration key')
+  .option('--value <value>', 'Value to set (used with --set)')
   .option('--reset', 'Reset configuration to defaults')
-  .action((options) => {
-    if (options.show) {
-      console.log(chalk.blue('Configuration management coming soon...'));
-    } else if (options.reset) {
-      console.log(chalk.yellow('Reset functionality coming soon...'));
-    } else {
-      console.log(chalk.red('Please specify --show or --reset'));
-    }
-  });
+  .action(configCommand);
 
 program.parse();
