@@ -6,13 +6,13 @@ CLI tool to scoop documentation websites and convert them to local Markdown file
 
 ```bash
 # Install dependencies (Chrome will be installed automatically)
-pnpm install
+npm install
 
 # If Chrome installation failed, run manually:
-pnpm run setup
+npm run setup
 
 # Make the CLI globally available (optional)
-pnpm link
+npm install -g .
 ```
 
 ### Requirements
@@ -78,13 +78,13 @@ scoopi config --reset
 
 ```bash
 # Run tests
-pnpm test
+npm test
 
 # Start in development mode
-pnpm run dev
+npm run dev
 
 # Lint code
-pnpm run lint
+npm run lint
 ```
 
 ## License
