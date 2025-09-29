@@ -23,6 +23,7 @@ export class Crawler {
     this.urlQueue = [];
     this.browser = null;
     this.page = null;
+    this.interrupted = false;
   }
 
   async crawl(startUrl) {
@@ -37,7 +38,7 @@ export class Crawler {
       this.urlQueue.push({ url: startUrl, depth: 0 });
 
       // Process queue
-      while (this.urlQueue.length > 0) {
+      while (this.urlQueue.length > 0 && !this.interrupted) {
         const { url, depth } = this.urlQueue.shift();
 
         // Skip if already visited
@@ -68,7 +69,11 @@ export class Crawler {
         }
       }
 
-      this.logger.success(`Crawl completed. Visited ${this.visitedUrls.size} pages.`);
+      if (this.interrupted) {
+        this.logger.info(`Crawl interrupted. Visited ${this.visitedUrls.size} pages.`);
+      } else {
+        this.logger.success(`Crawl completed. Visited ${this.visitedUrls.size} pages.`);
+      }
 
     } finally {
       await this.cleanup();
@@ -166,5 +171,13 @@ export class Crawler {
       this.logger.debug('Closing browser...');
       await this.browser.close();
     }
+  }
+
+  /**
+   * Interrupt the crawling process
+   */
+  interrupt() {
+    this.interrupted = true;
+    this.logger.debug('Crawl interruption requested');
   }
 }

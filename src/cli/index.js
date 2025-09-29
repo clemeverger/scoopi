@@ -34,4 +34,10 @@ program
   .option('--reset', 'Reset configuration to defaults')
   .action(configCommand);
 
+// Global SIGINT handler for graceful shutdown
+process.on('SIGINT', () => {
+  console.log(chalk.yellow('\n\nReceived interrupt signal. Shutting down gracefully...'));
+  process.exit(0);
+});
+
 program.parse();

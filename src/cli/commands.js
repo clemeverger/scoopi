@@ -7,6 +7,17 @@ import { ConfigManager } from '../config/manager.js';
 export async function crawlCommand(url, options) {
   const logger = new Logger(options.verbose);
   const spinner = ora('Initializing scoopi...').start();
+  let crawler = null;
+
+  // Handle graceful shutdown
+  const handleInterrupt = () => {
+    if (crawler) {
+      spinner.text = 'Interrupting crawl...';
+      crawler.interrupt();
+    }
+  };
+
+  process.on('SIGINT', handleInterrupt);
 
   try {
     // Validate URL
@@ -27,10 +38,14 @@ export async function crawlCommand(url, options) {
 
     spinner.text = 'Starting scoopi...';
 
-    const crawler = new Crawler(crawlerOptions, logger);
+    crawler = new Crawler(crawlerOptions, logger);
     await crawler.crawl(url);
 
-    spinner.succeed(chalk.green(`Documentation successfully scooped to ${options.output}`));
+    if (crawler.interrupted) {
+      spinner.warn(chalk.yellow('Crawl interrupted by user'));
+    } else {
+      spinner.succeed(chalk.green(`Documentation successfully scooped to ${config.outputDir}`));
+    }
 
   } catch (error) {
     spinner.fail(chalk.red(`Scooping failed: ${error.message}`));
@@ -38,5 +53,8 @@ export async function crawlCommand(url, options) {
       console.error(error.stack);
     }
     process.exit(1);
+  } finally {
+    // Clean up the SIGINT listener
+    process.removeListener('SIGINT', handleInterrupt);
   }
 }

@@ -54,6 +54,11 @@ export class ConfigManager {
       ...this.filterCliOptions(cliOptions)
     };
 
+    // Resolve outputDir relative to current working directory if it's not already absolute
+    if (merged.outputDir && !path.isAbsolute(merged.outputDir)) {
+      merged.outputDir = path.resolve(process.cwd(), merged.outputDir);
+    }
+
     return merged;
   }
 
@@ -61,13 +66,12 @@ export class ConfigManager {
    * Filter CLI options to only include config-related options
    */
   filterCliOptions(cliOptions) {
-    const configKeys = ['maxDepth', 'delay', 'timeout', 'outputDir', 'headless'];
     const filtered = {};
 
     // Map CLI option names to config keys
     if (cliOptions.depth !== undefined) filtered.maxDepth = parseInt(cliOptions.depth);
     if (cliOptions.delay !== undefined) filtered.delay = parseInt(cliOptions.delay);
-    if (cliOptions.output !== undefined) filtered.outputDir = cliOptions.output;
+    if (cliOptions.output !== undefined) filtered.outputDir = path.resolve(process.cwd(), cliOptions.output);
 
     return filtered;
   }
